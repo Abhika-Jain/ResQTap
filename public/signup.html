@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up | Safety App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- 🏠 APP HEADER -->
+  <header class="app-header">
+    <img src="assets/logo.PNG" alt="ResQTap Logo" class="logo">
+    <h1 class="app-name">ResQTap</h1>
+  </header>
+
+  <!-- 📦 SIGNUP CARD -->
+  <main class="container auth-container">
+
+    <h2 class="auth-title">Create Account</h2>
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+      class="auth-input"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      class="auth-input"
+    />
+
+    <button onclick="signup()" class="primary-btn">
+      Sign Up
+    </button>
+
+    <p class="auth-text">
+      Already have an account?
+      <a href="login.html" class="link">Login</a>
+    </p>
+
+  </main>
+
+  <!-- 🔥 FIREBASE + SIGNUP LOGIC -->
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+    import {
+      getAuth,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTfxnEMB7OBICeQ438pzJ4BvBnQ0Uql_k",
+      authDomain: "resqtap-1a60b.firebaseapp.com",
+      projectId: "resqtap-1a60b",
+      storageBucket: "resqtap-1a60b.firebasestorage.app",
+      messagingSenderId: "893294562834",
+      appId: "1:893294562834:web:bc140b6beb00be2c2c52cb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.signup = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          alert("Signup successful 🎉");
+          window.location.href = "index.html";
+        })
+        .catch(error => {
+          alert(error.message);
+        });
+    };
+  </script>
+  <script type="module" src="js/firebase_init.js"></script>
+  <script type="module" src="js/auth.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emergency Contacts | Safety App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- 🏠 APP HEADER -->
+  <header class="app-header">
+    <img src="assets/logo.PNG" alt="ResQTap Logo" class="logo">
+    <h1 class="app-name">ResQTap</h1>
+  </header>
+
+  <!-- 📦 CONTACTS CARD -->
+  <main class="container auth-container">
+
+    <h2 class="auth-title">Emergency Contacts</h2>
+
+    <!-- INPUTS -->
+    <input
+      type="text"
+      id="contactName"
+      placeholder="Contact Name"
+      class="auth-input"
+    />
+
+    <input
+      type="tel"
+      id="contactPhone"
+      placeholder="Phone Number"
+      class="auth-input"
+    />
+
+    <button onclick="saveContact()" class="primary-btn">
+      Save Contact
+    </button>
+
+    <p class="auth-text">
+      <a href="index.html" class="link">← Back to Home</a>
+    </p>
+
+  </main>
+
+  <!-- 🔥 FIREBASE INIT -->
+  <script type="module">
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTfxnEMB7OBICeQ438pzJ4BvBnQ0Uql_k",
+      authDomain: "resqtap-1a60b.firebaseapp.com",
+      projectId: "resqtap-1a60b",
+      storageBucket: "resqtap-1a60b.firebasestorage.app",
+      messagingSenderId: "893294562834",
+      appId: "1:893294562834:web:bc140b6beb00be2c2c52cb"
+    };
+
+    initializeApp(firebaseConfig);
+  </script>
+
+  <!-- 🔐 AUTH + CONTACT LOGIC -->
+  <script type="module" src="js/contacts.js"></script>
+  <script type="module" src="js/auth-guard.js"></script>
+
+</body>
+</html>
