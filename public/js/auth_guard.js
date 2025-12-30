@@ -1,17 +1,19 @@
-import { getAuth, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { auth } from "./firebase_init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const auth = getAuth();
-
-// 🚨 Immediately hide page to avoid flash
-document.body.style.display = "none";
+/* Hide page until auth is resolved */
+document.documentElement.style.display = "none";
 
 onAuthStateChanged(auth, (user) => {
+  const path = window.location.pathname;
+
   if (!user) {
-    // Not logged in → go to login
-    window.location.replace("login.html");
+    // If NOT logged in and NOT already on login/signup
+    if (!path.includes("login.html") && !path.includes("signup.html")) {
+      window.location.replace("login.html");
+    }
   } else {
-    // Logged in → show page
-    document.body.style.display = "block";
+    // Logged in → allow page
+    document.documentElement.style.display = "block";
   }
 });
