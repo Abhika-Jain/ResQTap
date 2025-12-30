@@ -1,6 +1,6 @@
-// 🔹 IMPORTS (MUST BE FIRST)
+import { db, auth } from "./firebase_init.js";
+
 import {
-  getFirestore,
   collection,
   addDoc,
   serverTimestamp,
@@ -9,169 +9,140 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { getAuth }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-// 🔹 GLOBAL VARIABLES
-let sosTimer = null;
 let motionTriggered = false;
 let countdownInterval = null;
-let remainingSeconds = 300; // 5 minutes
+let remainingSeconds = 300;
 
-// 🔹 FIREBASE INSTANCES
-const db = getFirestore();
-const auth = getAuth();
+// ================= SOS =================
 
-// 🔹 MAIN SOS FUNCTION
-window.startSOS = function () {
+window.startSOS = async function () {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please login first");
+    return;
+  }
+
   if (!navigator.geolocation) {
     alert("Geolocation not supported");
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+  alert("🚨 SOS triggered. Fetching location...");
 
-      const user = auth.currentUser;
-      if (!user) {
-        alert("User not logged in");
-        return;
-      }
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
 
       try {
         await addDoc(collection(db, "sos_events"), {
           userId: user.uid,
           latitude: lat,
           longitude: lon,
-          status: "triggered",
           timestamp: serverTimestamp()
         });
 
         const contacts = await fetchEmergencyContacts(user.uid);
 
-if (contacts.length > 0) {
-  alert(`🚨 SOS sent to: ${contacts.join(", ")}`);
-} else {
-  alert("🚨 SOS sent (no emergency contacts found)");
-}
-
-console.log("SOS sent to contacts:", contacts);
-
-
-      } catch (error) {
-        console.error("❌ Error saving SOS:", error);
-        alert("Failed to store SOS");
+        alert(
+          contacts.length
+            ? `🚨 SOS sent to: ${contacts.join(", ")}`
+            : "🚨 SOS sent (no contacts found)"
+        );
+      } catch (err) {
+        console.error(err);
+        alert("Failed to send SOS");
       }
     },
-    () => {
-      alert("Location permission denied");
-    }
+    () => alert("Location permission denied")
   );
 };
 
-// 🔹 MOTION → POPUP + TIMER
+// ================= MOTION POPUP =================
+
 window.askUserSafety = function () {
   if (motionTriggered) return;
   motionTriggered = true;
 
   remainingSeconds = 300;
-  updateCountdownUI();
+  updateCountdown();
 
   document.getElementById("safetyPopup").classList.remove("hidden");
 
   countdownInterval = setInterval(() => {
     remainingSeconds--;
-    updateCountdownUI();
+    updateCountdown();
 
     if (remainingSeconds <= 0) {
       clearInterval(countdownInterval);
-      countdownInterval = null;
-
-      console.log("⏰ No response. Auto SOS sent.");
       startSOS();
       closePopup();
     }
   }, 1000);
 };
 
-// 🔹 BUTTON: I'M SAFE
 window.userIsSafe = function () {
-  clearAllTimers();
-  motionTriggered = false;
-  closePopup();
+  clearTimers();
   alert("Glad you're safe ❤️");
 };
 
-// 🔹 BUTTON: I NEED HELP
 window.userNeedsHelp = function () {
-  clearAllTimers();
-  closePopup();
+  clearTimers();
   startSOS();
 };
 
-// 🔹 TIMER HELPERS
-function clearAllTimers() {
-  if (countdownInterval) clearInterval(countdownInterval);
+function clearTimers() {
+  clearInterval(countdownInterval);
   countdownInterval = null;
-  remainingSeconds = 300;
+  motionTriggered = false;
+  closePopup();
 }
 
-// 🔹 POPUP CLOSE
 function closePopup() {
   document.getElementById("safetyPopup").classList.add("hidden");
 }
 
-// 🔹 COUNTDOWN DISPLAY
-function updateCountdownUI() {
-  const min = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
-  const sec = String(remainingSeconds % 60).padStart(2, "0");
-  document.getElementById("countdown").innerText = `${min}:${sec}`;
+function updateCountdown() {
+  const m = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
+  const s = String(remainingSeconds % 60).padStart(2, "0");
+  document.getElementById("countdown").innerText = `${m}:${s}`;
 }
 
-// 🔹 MOTION DETECTION
+// ================= MOTION =================
+
 const MOTION_THRESHOLD = 25;
 
 window.enableMotionDetection = function () {
   if (!window.DeviceMotionEvent) {
-    alert("Motion detection not supported");
+    alert("Motion not supported on this device");
     return;
   }
 
   window.addEventListener("devicemotion", handleMotion);
-  alert("Motion detection enabled");
+  alert("Motion detection enabled (use phone)");
 };
 
-function handleMotion(event) {
+function handleMotion(e) {
   if (motionTriggered) return;
+  const a = e.accelerationIncludingGravity;
+  if (!a) return;
 
-  const acc = event.accelerationIncludingGravity;
-  if (!acc) return;
-
-  const total = Math.sqrt(
-    acc.x * acc.x +
-    acc.y * acc.y +
-    acc.z * acc.z
-  );
-
+  const total = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
   if (total > MOTION_THRESHOLD) {
-    console.log("🚨 Sudden movement detected:", total);
     askUserSafety();
   }
 }
-async function fetchEmergencyContacts(userId) {
+
+// ================= CONTACTS =================
+
+async function fetchEmergencyContacts(uid) {
   const q = query(
     collection(db, "emergency_contacts"),
-    where("userId", "==", userId)
+    where("userId", "==", uid)
   );
 
-  const snapshot = await getDocs(q);
-
+  const snap = await getDocs(q);
   const contacts = [];
-  snapshot.forEach(doc => {
-    contacts.push(doc.data().name);
-  });
-
+  snap.forEach(d => contacts.push(d.data().name));
   return contacts;
 }

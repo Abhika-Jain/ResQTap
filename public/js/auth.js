@@ -1,7 +1,6 @@
-import { getAuth, signInWithEmailAndPassword }
+import { auth } from "./firebase_init.js";
+import { signInWithEmailAndPassword }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const auth = getAuth();
 
 window.login = function () {
   const email = document.getElementById("email").value;
@@ -14,10 +13,7 @@ window.login = function () {
 
   signInWithEmailAndPassword(auth, email, password)
     .then(() => {
-      alert("Login successful");
-      window.location.href = "index.html";
+      window.location.replace("index.html");
     })
-    .catch((error) => {
-      alert(error.message);
-    });
+    .catch(err => alert(err.message));
 };
