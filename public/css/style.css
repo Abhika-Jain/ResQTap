@@ -42,6 +42,26 @@ body {
   font-weight: 700;
   letter-spacing: 0.4px;
 }
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
 
 /* =========================
    MAIN CONTAINER
