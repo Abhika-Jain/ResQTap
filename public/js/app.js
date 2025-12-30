@@ -11,7 +11,7 @@ import {
 
 let motionTriggered = false;
 let countdownInterval = null;
-let remainingSeconds = 300;
+let remainingSeconds = 10;
 
 // ================= SOS =================
 
@@ -64,7 +64,7 @@ window.askUserSafety = function () {
   if (motionTriggered) return;
   motionTriggered = true;
 
-  remainingSeconds = 300;
+  remainingSeconds = 10;
   updateCountdown();
 
   document.getElementById("safetyPopup").classList.remove("hidden");
