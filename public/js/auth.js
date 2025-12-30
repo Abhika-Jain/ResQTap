@@ -1,10 +1,13 @@
 import { auth } from "./firebase_init.js";
-import { signInWithEmailAndPassword }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  signInWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* LOGIN */
 window.login = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email")?.value;
+  const password = document.getElementById("password")?.value;
 
   if (!email || !password) {
     alert("Please fill all fields");
@@ -17,3 +20,21 @@ window.login = function () {
     })
     .catch(err => alert(err.message));
 };
+
+/* LOGOUT — SAFE WAY */
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth)
+        .then(() => {
+          window.location.replace("login.html");
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Logout failed");
+        });
+    });
+  }
+});
