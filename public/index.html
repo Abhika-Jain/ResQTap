@@ -1,76 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Home | ResQTap</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
 
+<!-- 🔔 SAFETY POPUP -->
 <div id="safetyPopup" class="popup hidden">
   <div class="popup-box">
     <h3>⚠️ Sudden movement detected</h3>
     <p>Are you okay?</p>
-    <button onclick="userIsSafe()">I'm Safe</button>
-    <button onclick="userNeedsHelp()">I Need Help</button>
-    <p>Auto SOS in <span id="countdown">05:00</span></p>
+
+    <div class="popup-buttons">
+      <button class="safe-btn" onclick="userIsSafe()">I'm Safe</button>
+      <button class="help-btn" onclick="userNeedsHelp()">I Need Help</button>
+    </div>
+
+    <p class="timer-text">
+      Auto SOS in <span id="countdown">05:00</span>
+    </p>
   </div>
 </div>
 
+<!-- 🏠 HEADER -->
 <header class="app-header">
-  <img src="assets/logo.PNG" class="logo">
-  <h1>ResQTap</h1>
+  <div class="header-left">
+    <img src="assets/logo.PNG" class="logo" />
+    <h1 class="app-name">ResQTap</h1>
+  </div>
+  <button class="logout-btn" onclick="logout()">Logout</button>
 </header>
 
+<!-- 📦 MAIN -->
 <main class="container">
   <button class="sos-btn" onclick="startSOS()">SOS</button>
-  <button onclick="enableMotionDetection()">Enable Motion Detection</button>
-  <a href="contacts.html">Manage Emergency Contacts</a>
+
+  <button class="motion-btn" onclick="enableMotionDetection()">
+    Enable Motion Detection
+  </button>
+
+  <a class="link" href="contacts.html">
+    Manage Emergency Contacts
+  </a>
 </main>
 
 <script type="module" src="js/firebase_init.js"></script>
 <script type="module" src="js/auth_guard.js"></script>
 <script type="module" src="js/app.js"></script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Home | ResQTap</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/style.css">
-</head>
-
-<body>
-
-<div id="safetyPopup" class="popup hidden">
-  <div class="popup-box">
-    <h3>⚠️ Sudden movement detected</h3>
-    <p>Are you okay?</p>
-    <button onclick="userIsSafe()">I'm Safe</button>
-    <button onclick="userNeedsHelp()">I Need Help</button>
-    <p>Auto SOS in <span id="countdown">05:00</span></p>
-  </div>
-</div>
-
-<header class="app-header">
-  <img src="assets/logo.PNG" class="logo">
-  <h1>ResQTap</h1>
-</header>
-
-<main class="container">
-  <button class="sos-btn" onclick="startSOS()">SOS</button>
-  <button onclick="enableMotionDetection()">Enable Motion Detection</button>
-  <a href="contacts.html">Manage Emergency Contacts</a>
-</main>
-
-<script type="module" src="js/firebase_init.js"></script>
-<script type="module" src="js/auth_guard.js"></script>
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/logout.js"></script>
 
 </body>
 </html>
