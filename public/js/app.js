@@ -9,11 +9,15 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ================= STATE ================= */
+
 let motionTriggered = false;
 let countdownInterval = null;
 let remainingSeconds = 10;
 
-// ================= SOS =================
+const MOTION_THRESHOLD = 25;
+
+/* ================= SOS CORE ================= */
 
 window.startSOS = async function () {
   const user = auth.currentUser;
@@ -27,30 +31,49 @@ window.startSOS = async function () {
     return;
   }
 
-  alert("🚨 SOS triggered. Fetching location...");
+  alert("🚨 SOS activated. Fetching location...");
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
+      // ✅ FORCE DECIMAL DEGREE FORMAT
+      const latitude = Number(pos.coords.latitude).toFixed(6);
+      const longitude = Number(pos.coords.longitude).toFixed(6);
 
       try {
+        // 🔥 Save SOS event in Firebase (decimal degrees)
         await addDoc(collection(db, "sos_events"), {
           userId: user.uid,
-          latitude: lat,
-          longitude: lon,
+          latitude: Number(latitude),
+          longitude: Number(longitude),
           timestamp: serverTimestamp()
         });
 
+        // 📞 Fetch emergency contacts
         const contacts = await fetchEmergencyContacts(user.uid);
 
-        alert(
-          contacts.length
-            ? `🚨 SOS sent to: ${contacts.join(", ")}`
-            : "🚨 SOS sent (no contacts found)"
-        );
+        // 📍 Google Maps (decimal degrees)
+        const locationLink =
+          `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+        const message =
+          `🚨 *SOS ALERT* 🚨\n\n` +
+          `I may be in danger.\n\n` +
+          `📍 Location (Decimal Degrees):\n` +
+          `Latitude: ${latitude}\n` +
+          `Longitude: ${longitude}\n\n` +
+          `🗺️ Open in Maps:\n${locationLink}\n\n` +
+          `Please respond immediately.`;
+
+        // 📲 WhatsApp SOS
+        if (contacts.length === 0) {
+          alert("SOS sent, but no emergency contacts found.");
+        } else {
+          sendWhatsAppSOS(contacts, message);
+          alert(`🚨 WhatsApp SOS sent to ${contacts.length} contact(s)`);
+        }
+
       } catch (err) {
-        console.error(err);
+        console.error("SOS error:", err);
         alert("Failed to send SOS");
       }
     },
@@ -58,12 +81,47 @@ window.startSOS = async function () {
   );
 };
 
-// ================= MOTION POPUP =================
+/* ================= WHATSAPP ================= */
+
+function sendWhatsAppSOS(contacts, message) {
+  contacts.forEach((phone, index) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    const url =
+      `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+
+    // Delay avoids popup blocking
+    setTimeout(() => {
+      window.open(url, "_blank");
+    }, index * 800);
+  });
+}
+
+/* ================= CONTACTS ================= */
+
+async function fetchEmergencyContacts(uid) {
+  const q = query(
+    collection(db, "emergency_contacts"),
+    where("userId", "==", uid)
+  );
+
+  const snap = await getDocs(q);
+  const phones = [];
+
+  snap.forEach(doc => {
+    if (doc.data().phone) {
+      phones.push(doc.data().phone);
+    }
+  });
+
+  return phones;
+}
+
+/* ================= SAFETY POPUP ================= */
 
 window.askUserSafety = function () {
   if (motionTriggered) return;
-  motionTriggered = true;
 
+  motionTriggered = true;
   remainingSeconds = 10;
   updateCountdown();
 
@@ -108,9 +166,7 @@ function updateCountdown() {
   document.getElementById("countdown").innerText = `${m}:${s}`;
 }
 
-// ================= MOTION =================
-
-const MOTION_THRESHOLD = 25;
+/* ================= MOTION DETECTION ================= */
 
 window.enableMotionDetection = function () {
   if (!window.DeviceMotionEvent) {
@@ -124,25 +180,26 @@ window.enableMotionDetection = function () {
 
 function handleMotion(e) {
   if (motionTriggered) return;
+
   const a = e.accelerationIncludingGravity;
   if (!a) return;
 
-  const total = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+  const total = Math.sqrt(
+    a.x * a.x +
+    a.y * a.y +
+    a.z * a.z
+  );
+
   if (total > MOTION_THRESHOLD) {
     askUserSafety();
   }
 }
 
-// ================= CONTACTS =================
+/* ================= WEB DEMO ================= */
 
-async function fetchEmergencyContacts(uid) {
-  const q = query(
-    collection(db, "emergency_contacts"),
-    where("userId", "==", uid)
-  );
+window.simulateMovement = function () {
+  if (motionTriggered) return;
 
-  const snap = await getDocs(q);
-  const contacts = [];
-  snap.forEach(d => contacts.push(d.data().name));
-  return contacts;
-}
+  console.log("🧪 Simulated movement (Web Demo)");
+  askUserSafety();
+};
