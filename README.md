@@ -26,7 +26,7 @@ ResQTap enables users to:
 ### Google Technologies Used
 - **Firebase Authentication** – Secure user login & signup  
 - **Cloud Firestore** – Real-time database for SOS events & contacts  
-- **Firebase Hosting** – Secure web hosting (HTTPS by default)  
+- **Firebase Hosting** – Secure web hosting (HTTPS)  
 - **Google Cloud Console** – API key management & monitoring  
 
 ### Frontend
